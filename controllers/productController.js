@@ -71,7 +71,7 @@ exports.addProduct = async (req, res) => {
     await product.save();
 
     await transporter.sendMail({
-      to: "sudhakarsudha8672@gmail.com",
+      to: "localestartup@gmail.com",
       subject: "New Product Pending Approval",
       html: `<p>A new product <strong>${name}</strong> has been uploaded and needs approval.</p>`,
     });
@@ -212,7 +212,7 @@ exports.updateProduct = async (req, res) => {
       return res.status(404).json({ error: "Product not found!" });
     }
     await transporter.sendMail({
-      to: "sudhakarsudha8672@gmail.com",
+      to: "localestartup@gmail.com",
       subject: "Updated Product Pending Approval",
       html: `<p>A product <strong>${updatedProduct.name}</strong> has been updated and is pending approval.</p>`,
     });
