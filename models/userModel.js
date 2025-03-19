@@ -1,23 +1,5 @@
 
 
-// const mongoose = require('mongoose');
-
-// const UserSchema = new mongoose.Schema(
-//   {
-//     name: { type: String, required: true },
-//     email: { type: String, required: true, unique: true },
-//     password: { type: String, required: true },
-//     phone: { type: String, required: true },
-//     otp: { type: String }, // OTP storage
-//     otpExpires: { type: Date }, // OTP expiration time
-//   },
-//   { timestamps: true } // Adds createdAt and updatedAt fields
-// );
-
-// module.exports = mongoose.model('User', UserSchema);
-
-
-
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
@@ -39,6 +21,11 @@ const UserSchema = new mongoose.Schema({
     minlength: 6,
   },
   phone: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  address: {
     type: String,
     required: true,
     trim: true,

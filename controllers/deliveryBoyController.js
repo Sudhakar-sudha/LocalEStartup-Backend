@@ -1,64 +1,84 @@
 const DeliveryBoy = require("../models/deliveryBoyModel");
-const axios = require("axios");
 
-// Register a New Delivery Boy
-exports.registerDeliveryBoy = async (req, res) => {
+// Register a new Delivery Boy (Default status: Pending, Verification Pending)
+exports.addDeliveryBoy = async (req, res) => {
   try {
-    const { name, phone, aadharNumber, licenseNumber, address } = req.body;
-
-    // Check if already registered
-    const existingBoy = await DeliveryBoy.findOne({ aadharNumber });
-    if (existingBoy) return res.status(400).json({ error: "Already registered!" });
-
-    // Save to Database
-    const deliveryBoy = new DeliveryBoy({ name, phone, aadharNumber, licenseNumber, address });
-    await deliveryBoy.save();
-    
-    res.json({ message: "Delivery Boy Registered. Verification Pending." });
+    const newDeliveryBoy = new DeliveryBoy(req.body);
+    await newDeliveryBoy.save();
+    res.status(201).json({ message: "Delivery Boy Registered (Pending Verification)", data: newDeliveryBoy });
   } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-}; 
-
-// Verify Aadhar (API Call)
-exports.verifyAadhar = async (req, res) => {
-  try {
-    const { aadharNumber } = req.params;
-
-    const response = await axios.post(
-      "https://api.uidai.gov.in/verify-aadhar",
-      { aadharNumber },
-      { headers: { Authorization: "Bearer YOUR_API_KEY" } }
-    );
-
-    if (response.data.status === "valid") {
-      await DeliveryBoy.findOneAndUpdate({ aadharNumber }, { verificationStatus: "Aadhar Verified" });
-      res.json({ message: "✅ Aadhar Verified", data: response.data });
-    } else {
-      res.status(400).json({ error: "❌ Invalid Aadhar!" });
-    }
-  } catch (error) {
-    res.status(500).json({ error: "Aadhar Verification Failed" });
+    res.status(500).json({ message: "Server Error", error });
   }
 };
 
-// Verify License (API Call)
-exports.verifyLicense = async (req, res) => {
+// Verify Delivery Boy (Admin action)
+exports.verifyDeliveryBoy = async (req, res) => {
   try {
-    const { licenseNumber } = req.params;
+    const deliveryBoy = await DeliveryBoy.findByIdAndUpdate(
+      req.params.id,
+      { verificationStatus: "Verified" },
+      { new: true }
+    );
+    if (!deliveryBoy) return res.status(404).json({ message: "Delivery Boy not found" });
+    res.status(200).json({ message: "Delivery Boy Verified", data: deliveryBoy });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
 
-    const response = await axios.get(
-      `https://parivahan.gov.in/api/dl/verify?licenseNumber=${licenseNumber}`,
-      { headers: { Authorization: "Bearer YOUR_API_KEY" } }
+// Reject Delivery Boy (Admin action)
+exports.rejectDeliveryBoy = async (req, res) => {
+  try {
+    const deliveryBoy = await DeliveryBoy.findByIdAndUpdate(
+      req.params.id,
+      { verificationStatus: "Rejected" },
+      { new: true }
+    );
+    if (!deliveryBoy) return res.status(404).json({ message: "Delivery Boy not found" });
+    res.status(200).json({ message: "Delivery Boy Rejected", data: deliveryBoy });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
+
+// Approve Delivery Boy (Only if Verified)
+exports.approveDeliveryBoy = async (req, res) => {
+  try {
+    const deliveryBoy = await DeliveryBoy.findById(req.params.id);
+    if (!deliveryBoy) return res.status(404).json({ message: "Delivery Boy not found" });
+
+    if (deliveryBoy.verificationStatus !== "Verified") {
+      return res.status(400).json({ message: "Delivery Boy must be verified before approval" });
+    }
+
+    deliveryBoy.status = "Approved";
+    await deliveryBoy.save();
+    res.status(200).json({ message: "Delivery Boy Approved", data: deliveryBoy });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error", error });
+  }
+};
+
+// Update Delivery Status (Picked Up → Going to Delivery → Delivered → Completed)
+exports.updateDeliveryStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const validStatuses = ["Picked Up", "Going to Delivery", "Delivered", "Completed"];
+
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid Status Update" });
+    }
+
+    const deliveryBoy = await DeliveryBoy.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
     );
 
-    if (response.data.status === "valid") {
-      await DeliveryBoy.findOneAndUpdate({ licenseNumber }, { verificationStatus: "License Verified" });
-      res.json({ message: "✅ License Verified", data: response.data });
-    } else {
-      res.status(400).json({ error: "❌ Invalid License!" });
-    }
+    if (!deliveryBoy) return res.status(404).json({ message: "Delivery Boy not found" });
+
+    res.status(200).json({ message: `Status Updated to ${status}`, data: deliveryBoy });
   } catch (error) {
-    res.status(500).json({ error: "License Verification Failed" });
+    res.status(500).json({ message: "Server Error", error });
   }
 };

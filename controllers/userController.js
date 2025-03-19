@@ -1,11 +1,8 @@
 const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const transporter = require('../utils/emailTransporter');
 const crypto = require('crypto');
 const moment = require('moment');
-
-
 require('dotenv').config();
 
    
@@ -17,20 +14,18 @@ function generateSixDigitToken() {
 exports.register = async (req, res) => {
   try {
     console.log('Received data:', req.body);
-    const { name, email, password, phone } = req.body;
-    
-    if (!name || !email || !password || !phone) {
+    const { name, email, password, phone , address } = req.body;
+      
+    if (!name || !email || !password || !phone ||!address) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-
+  
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-  
-
     
     function generateSixDigitToken() {
       return (crypto.randomInt(100000, 1000000)).toString();
@@ -42,12 +37,12 @@ exports.register = async (req, res) => {
      const otpExpires = moment().add(5, 'minutes').toDate(); // Expires in 10 minutes
     
 
-    let user = new User({ name, email, password: hashedPassword, phone, otp, otpExpires });
+    let user = new User({ name, email, password: hashedPassword, phone , address, otp, otpExpires });
     await user.save();
 
     console.log(`OTP generated for ${email}: ${otp}`);
     
-
+console.log(user._id)
 
     await transporter.sendMail({
         to: email,
@@ -63,6 +58,41 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(400).json({ message: 'User not found!' });
+    }
+
+    // Generate a 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = moment().add(5, 'minutes').toDate();
+
+    // Update the user with new OTP and expiry
+    existingUser.otp = otp;
+    existingUser.otpExpires = otpExpires;
+    await existingUser.save();
+
+    console.log(`OTP generated for ${email}: ${otp}`);
+
+    // Send OTP via email
+    await transporter.sendMail({
+      to: email,
+      subject: "Your OTP for Verification",
+      html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>
+             <p>This OTP is valid for 5 minutes.</p>`,
+    });
+
+    res.status(200).json({ message: 'OTP sent to email' });
+  } catch (err) {
+    console.error('Error in sendOTP:', err);
+    res.status(500).json({ message: err.message });
+  }
+};
 // Verify OTP
 exports.verifyOtp = async (req, res) => {
   try {
@@ -175,7 +205,17 @@ exports.login = async (req, res) => {
 
     console.log(`User logged in: ${email}`);
 
-    res.status(200).json({ message: 'Login successful' });
+    // res.status(200).json({ message: 'Login successful' });
+    res.status(200).json({ 
+      message: 'Login successful', 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone:user.phone,
+        address:user.address,
+      } 
+    });
 
   } catch (err) {
     console.error('Error in login:', err);
@@ -186,49 +226,54 @@ exports.login = async (req, res) => {
 
 
 
-// Verify OTP and reset password
+// // Verify OTP and reset password
+
 exports.resetPassword = async (req, res) => {
-    const { email, otp, newPassword, confirmPassword } = req.body;
-
-    console.log("Request Data:", { email, otp, newPassword, confirmPassword });
-    console.log("Stored OTPs:", otpStorage); // Debugging
-
     try {
-        const storedOTP = otpStorage[email.toLowerCase()];
+        const { email, otp, newPassword, confirmPassword } = req.body;
 
-        console.log("Retrieved OTP Data:", storedOTP); // Debugging
+        console.log("Request Data:", { email, otp, newPassword, confirmPassword });
 
-        if (!storedOTP) {
-            return res.status(400).json({ message: 'OTP not found. Please request a new one.' });
+        // Find user by email
+        const user = await User.findOne({ email: email.toLowerCase() });
+
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
 
-        if (storedOTP.otp !== otp) {
+        console.log("Stored OTP Data:", { otp: user.otp, otpExpires: user.otpExpires }); // Debugging
+
+        // Check if OTP exists and matches
+        if (!user.otp || user.otp !== otp) {
             return res.status(400).json({ message: 'Invalid OTP' });
         }
 
-        if (Date.now() > storedOTP.expiresAt) {
-            delete otpStorage[email.toLowerCase()];
+        // Check if OTP has expired
+        if (new Date() > user.otpExpires) {
             return res.status(400).json({ message: 'OTP expired. Request a new one.' });
         }
 
+        // Check if passwords match
         if (newPassword !== confirmPassword) {
             return res.status(400).json({ message: 'Passwords do not match' });
         }
 
-        const user = await User.findOne({ email: email.toLowerCase() });
-        if (!user) return res.status(404).json({ message: 'User not found' });
-
+        // Hash new password and update user
         user.password = await bcrypt.hash(newPassword, 10);
-        await user.save();
 
-        delete otpStorage[email.toLowerCase()]; // Remove OTP after use
+        // Clear OTP fields after successful password reset
+        user.otp = null;
+        user.otpExpires = null;
+
+        await user.save();
 
         res.json({ message: 'Password reset successful' });
     } catch (error) {
-        console.error(error);
+        console.error('Error in resetPassword:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 
 
 exports.deleteUserById = async (req, res) => {
@@ -272,5 +317,39 @@ exports.getUsers = async (req, res) => {
   } catch (err) {
     console.error("Error fetching users:", err);
     res.status(500).json({ error: "Error fetching users" });
+  }
+};
+
+
+exports.updateUserProfile = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { name, phone, address } = req.body;
+    // Check if user exists
+    let user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Update user details 
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    user.address = address || user.address;
+
+    await user.save();
+
+    res.status(200).json({ message: "Profile updated successfully", 
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        phone:user.phone,
+        address:user.address,
+      } 
+     });
+
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };

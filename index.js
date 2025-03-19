@@ -25,7 +25,11 @@ app.use("/api/reviews", require('./routes/reviewRoutes'));
 app.use("/api/cart", require('./routes/cartRoutes'));
 
 
-app.use("/api", require('./routes/deliveryBoyRoutes'));
+// app.use("/api", require('./routes/deliveryBoyRoutes'));
+
+
+// Use Delivery Boy Routes
+app.use("/api/deliveryboys", require('./routes/deliveryBoyRoutes'));
 app.listen(process.env.PORT ,() =>{
 console.log(`Server is running   ${process.env.PORT} port  for ${process.env.NODE_ENV}`);
 });
