@@ -6,14 +6,14 @@ const Product = require("../models/productModel");
 exports.addToCart = async (req, res) => {
   try {
     const { user, items } = req.body;
-    
+    console.log(user , items);
     if (!user || !items || items.length === 0) {
       return res.status(400).json({ message: "Invalid request data!" });
     }
 
     // Find the user's cart
     let cart = await Cart.findOne({ user });
-
+    console.log("hi da ",cart);
     if (!cart) {
       cart = new Cart({ user, items: [], totalPrice: 0 });
     }
@@ -55,7 +55,23 @@ exports.getCartItems = async (req, res) => {
     const cart = await Cart.findOne({ user: req.params.userId }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart is empty!" });
 
-    res.status(200).json(cart);
+    // Extracting necessary details
+    const cartData = {
+      _id: cart._id,
+      user: cart.user.toString(),
+      items: cart.items.map(item => ({
+        productId: item.product._id, // Ensure this is properly populated
+        name: item.product.name,
+        price: item.price,
+        quantity: item.quantity,
+        image: item.product.images[0], // Assuming product has an image field
+      })),
+      totalPrice: cart.totalPrice,
+      discount: cart.discount,
+    }; 
+console.log(cartData);
+    // console.log(cartData);
+    res.status(200).json(cartData);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -64,20 +80,66 @@ exports.getCartItems = async (req, res) => {
 
 
 
-// 📌 Remove Item from Cart
+
+// // 📌 Remove Item from Cart
 exports.removeFromCart = async (req, res) => {
   try {
     const { userId, productId } = req.body;
 
-    const cart = await Cart.findOne({ user: userId });
-    if (!cart) return res.status(404).json({ message: "Cart not found!" });
+    if (!userId || !productId) {
+      return res.status(400).json({ message: "User ID and Product ID are required." });
+    }
 
-    cart.items = cart.items.filter((item) => item.product.toString() !== productId);
+    console.log("Removing Product:", productId, "for User:", userId); // Debugging
+
+    // 🛒 Find the user's cart
+    const cart = await Cart.findOne({ user: userId });
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found!" });
+    }
+
+    // 🔍 Find the index of the product in the cart
+    const itemIndex = cart.items.findIndex((item) => item.product.toString() === productId);
+    if (itemIndex === -1) {
+      return res.status(404).json({ message: "Product not found in cart!" });
+    }
+
+    // Get the price of the removed item
+    const removedItem = cart.items[itemIndex];
+    const removedItemTotalPrice = removedItem.price * removedItem.quantity;
+
+    // 🗑 Remove product from cart
+    cart.items.splice(itemIndex, 1);
+
+    // 🔢 Update total price after removal
+    cart.totalPrice = Math.max(0, cart.totalPrice - removedItemTotalPrice);
+
+    // 💾 Save the updated cart
     await cart.save();
 
     res.status(200).json({ message: "Item removed from cart", cart });
   } catch (err) {
+    console.error("Error removing item from cart:", err);
     res.status(500).json({ message: err.message });
   }
 };
- 
+
+
+// 📌 Delete Entire Cart
+exports.deleteCart = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find and delete the cart
+    const cart = await Cart.findOneAndDelete({ user: userId });
+
+    if (!cart) {
+      return res.status(404).json({ message: "Cart not found!" });
+    }
+
+    res.status(200).json({ message: "Cart deleted successfully!" });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+

@@ -12,7 +12,6 @@ connectDatabase();
 // Serve images from the 'pictures' folder
 app.use(cors());
 app.use(express.json());
-// app.use(cors({ origin: 'http://localhost:5173' })); // Allow frontend access
 
 app.use('/sellerdata',require ('./routes/SellerData'));
 app.use("/product", require("./routes/index"));
@@ -20,14 +19,12 @@ app.use('/user', require('./routes/UserData'));
 
 app.use("/admin", require('./routes/adminapproveRoutes')); // ✅ Use Admin Routes
 
-app.use("/api/orders", require('./routes/orderRoutes'));
+// app.use("/api/orders", require('./routes/orderRoutes'));
 app.use("/api/reviews", require('./routes/reviewRoutes'));
 app.use("/api/cart", require('./routes/cartRoutes'));
 
-
-// app.use("/api", require('./routes/deliveryBoyRoutes'));
-
-
+// ✅ Ensure this matches the correct route
+app.use("/api/orders", require("./routes/orderRoutes"));
 // Use Delivery Boy Routes
 app.use("/api/deliveryboys", require('./routes/deliveryBoyRoutes'));
 app.listen(process.env.PORT ,() =>{

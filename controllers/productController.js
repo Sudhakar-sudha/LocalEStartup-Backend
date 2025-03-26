@@ -43,15 +43,6 @@ exports.addProduct = async (req, res) => {
       return res.status(400).json({ error: "Please correct the following errors", details: errors });
     }
 
-
-    // Store image URLs from Cloudinary (instead of Base64)
-    // const images = req.files.map((file) => file.path);
-
-
-
-    // // Convert images to Base64
-    // const images = req.files.map(file => `data:${file.mimetype};base64,${file.buffer.toString("base64")}`);
-
     let parsedAdditionalInfo = [];
     try {
       parsedAdditionalInfo = additionalInformation ? JSON.parse(additionalInformation) : [];
