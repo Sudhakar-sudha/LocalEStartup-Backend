@@ -23,20 +23,10 @@ const orderSchema = new mongoose.Schema({
       enum: ["Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], 
       default: "Placed" 
     },
-    trackingId: { type: String, unique: true },
     address: { type: String, required: true },
     deliveryBoy: { type: mongoose.Schema.Types.ObjectId, ref: "DeliveryBoy" },
     estimatedDelivery: { type: Date },
     placedAt: { type: Date, default: Date.now }
-    
-    // // ✅ Return Management
-    // returnRequest: { type: Boolean, default: false },
-    // returnReason: { type: String },  // Stores reason for return
-    // returnStatus: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" },
-    // refundStatus: { type: String, enum: ["Not Requested", "Pending", "Approved", "Rejected"], default: "Not Requested" },
-    // refundAmount: { type: Number, default: 0 },  // Stores refund amount if applicable
-    // returnDate: { type: Date },  // Date when the return was processed
-  
   });
   
   module.exports = mongoose.model("Order", orderSchema);

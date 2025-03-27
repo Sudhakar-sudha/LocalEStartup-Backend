@@ -37,8 +37,14 @@ exports.addToCart = async (req, res) => {
     }
 
     // Recalculate total price
-    cart.totalPrice = cart.items.reduce((total, item) => total + item.quantity * item.price, 0);
-
+    // cart.totalPrice = cart.items.reduce((total, item) => total + item.quantity * item.price, 0);
+    cart.totalPrice = (() => {
+      const total = cart.items.reduce((total, item) => total + item.quantity * item.price, 0);
+      const decimalPart = total - Math.floor(total); // Extract decimal part
+    
+      return decimalPart > 0.49 ? Math.ceil(total) : Math.floor(total);
+    })();
+    
     await cart.save();
     res.status(200).json({ message: "Items added to cart", cart });
 

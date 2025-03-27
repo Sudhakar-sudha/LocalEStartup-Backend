@@ -1,20 +1,33 @@
 const Order = require("../models/orderModel");
 const Product = require("../models/productModel");
 const User = require("../models/userModel");
+const Seller = require("../models/sellerdataModel"); // Import Seller Model
 
-// 📌 Place a New Order
+// // 📌 Place a New Order
+
 exports.placeOrder = async (req, res) => {
   try {
+    console.log("Received Order Data:", req.body); // ✅ Debugging
+
     const { userId, products, paymentMethod, address } = req.body;
 
     let totalAmount = 0;
     const orderedProducts = [];
+    let sellerAddress = "";
 
     for (let item of products) {
       const product = await Product.findById(item.product);
       if (!product) return res.status(404).json({ message: "Product not found!" });
 
       totalAmount += product.price * item.quantity;
+      
+      // ✅ Fetch seller address from Seller model
+      const seller = await Seller.findById(product.seller);
+      console.log(seller);
+      if (!seller) return res.status(404).json({ message: "Seller not found!" });
+
+      sellerAddress = seller.companyInfo.companyAddress; // Auto-assign seller's address
+console.log(sellerAddress);
       orderedProducts.push({
         product: product._id,
         quantity: item.quantity,
@@ -29,15 +42,19 @@ exports.placeOrder = async (req, res) => {
       totalAmount,
       paymentMethod,
       address,
-      sellerAddress: "Auto Fetch from Seller Model",
+      sellerAddress, // ✅ Automatically assigned
     });
+
+    console.log("✅ Order Data:", order);
 
     await order.save();
     res.status(201).json({ message: "Order placed successfully", order });
   } catch (err) {
+    console.error("❌ Order Placement Error:", err.message);
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 
@@ -68,20 +85,21 @@ exports.getOrdersByUser = async (req, res) => {
 };
 
 // 📌 Cancel Order
+// 📌 Cancel Order API (Update order status instead of deleting)
 exports.cancelOrder = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
     if (!order) return res.status(404).json({ message: "Order not found!" });
 
+    // Update order status
     order.orderStatus = "Cancelled";
     await order.save();
 
-    res.status(200).json({ message: "Order cancelled", order });
+    return res.status(200).json({ message: "Order has been cancelled.", order });
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+    return res.status(500).json({ message: "Server error. Please try again later." });
+  } 
 };
-
 
 
 
@@ -108,3 +126,29 @@ exports.getOrderCount = async (req, res) => {
     res.status(500).json({ error: `Internal Server Error: ${err.message}` });
   }
 };
+
+
+exports.getAllOrders = async (req, res) => {
+  try {
+    console.log("Fetching all orders...");
+
+    const orders = await Order.find()
+      .populate("user", "name email") // Populate user details
+      .populate({
+        path: "products.product",
+        select: "name price image", // Select required fields
+      })
+      .populate("products.seller", "companyInfo.companyName companyInfo.companyAddress"); // Fetch seller details correctly
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: "No orders found" });
+    }
+
+    console.log(`✅ Fetched ${orders.length} orders`);
+    res.status(200).json({ orders }); // Return as an object with key "orders"
+  } catch (err) {
+    console.error("❌ Error fetching orders:", err.message);
+    res.status(500).json({ message: "Internal server error. Please try again later." });
+  }
+};
+

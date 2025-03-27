@@ -23,7 +23,7 @@ exports.addDeliveryBoy = async (req, res) => {
       // Check for duplicate email
       if (await DeliveryBoy.findOne({ email })) {
         return res.status(400).json({ message: "Email already registered. Use a different email." });
-      }
+      } 
 
       // Check for duplicate phone
       if (await DeliveryBoy.findOne({ phone })) {
