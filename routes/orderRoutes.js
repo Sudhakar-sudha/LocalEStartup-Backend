@@ -3,14 +3,10 @@ const { placeOrder, getOrderById, getOrdersByUser, cancelOrder ,getOrderCount, g
 
 const router = express.Router();
 
+router.get("/count", getOrderCount); // Use "/count" instead of "/c"
 router.post("/place", placeOrder);
 router.get("/:id", getOrderById);
 router.get("/user/:userId", getOrdersByUser);
 router.put("/cancel/:id", cancelOrder);
-router.get("/",getAllOrders)
-// router.get("/countorders", getOrderCount); // ✅ Correct API endpoint
-
-
-// ✅ Fix: Correct API endpoint to match frontend request
-router.get("/", getOrderCount);
+router.get("/",getAllOrders);
 module.exports = router;

@@ -106,7 +106,8 @@ exports.cancelOrder = async (req, res) => {
 exports.getOrderCount = async (req, res) => {
   try {
     console.log("Fetching total order count...");
-    
+
+    // Ensure MongoDB is connected before querying
     if (!Order) {
       throw new Error("Order model is not available.");
     }
@@ -116,16 +117,11 @@ exports.getOrderCount = async (req, res) => {
 
     res.status(200).json({ count: orderCount });
   } catch (err) {
-    console.error("Error fetching order count:", err.message);
-
-    // Send proper error message
-    if (err.name === "CastError") {
-      return res.status(400).json({ error: "Invalid request format. Please check the API endpoint." });
-    }
-
+    console.error("❌ Error fetching order count:", err.message);
     res.status(500).json({ error: `Internal Server Error: ${err.message}` });
   }
 };
+
 
 
 exports.getAllOrders = async (req, res) => {
