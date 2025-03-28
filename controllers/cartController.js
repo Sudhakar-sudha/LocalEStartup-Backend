@@ -44,7 +44,7 @@ exports.addToCart = async (req, res) => {
     
       return decimalPart > 0.49 ? Math.ceil(total) : Math.floor(total);
     })();
-    
+     
     await cart.save();
     res.status(200).json({ message: "Items added to cart", cart });
 

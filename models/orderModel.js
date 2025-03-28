@@ -11,6 +11,7 @@ const orderSchema = new mongoose.Schema({
       }
     ],
     sellerAddress: { type: String, required: true },
+    sellerPhone: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
     paymentMethod: { 
       type: String, 

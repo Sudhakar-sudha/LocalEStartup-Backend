@@ -27,6 +27,7 @@ exports.placeOrder = async (req, res) => {
       if (!seller) return res.status(404).json({ message: "Seller not found!" });
 
       sellerAddress = seller.companyInfo.companyAddress; // Auto-assign seller's address
+      sellerPhone= seller.companyInfo.companyPhone; // Auto-assign seller's address
 console.log(sellerAddress);
       orderedProducts.push({
         product: product._id,
@@ -43,6 +44,7 @@ console.log(sellerAddress);
       paymentMethod,
       address,
       sellerAddress, // ✅ Automatically assigned
+      sellerPhone, // ✅ Automatically assigned
     });
 
     console.log("✅ Order Data:", order);
@@ -124,27 +126,53 @@ exports.getOrderCount = async (req, res) => {
 
 
 
+// exports.getAllOrders = async (req, res) => {
+//   try {
+//     console.log("Fetching all orders...");
+
+//     const orders = await Order.find()
+//       .populate("user", "name email phone") // Populate user details
+//       .populate({
+//         path: "products.product",
+//         select: "name price image", // Select required fields
+//       })
+//       .populate("products.seller", "companyInfo.companyName companyInfo.companyAddress companyInfo.companyPhone"); // Fetch seller details correctly
+
+//     if (!orders || orders.length === 0) {
+//       return res.status(404).json({ message: "No orders found" });
+//     }
+
+//     console.log(`✅ Fetched ${orders.length} orders`);
+//     res.status(200).json({ orders }); // Return as an object with key "orders"
+//   } catch (err) {
+//     console.error("❌ Error fetching orders:", err.message);
+//     res.status(500).json({ message: "Internal server error. Please try again later." });
+//   }
+// };
+
 exports.getAllOrders = async (req, res) => {
   try {
     console.log("Fetching all orders...");
 
     const orders = await Order.find()
-      .populate("user", "name email") // Populate user details
+      .populate("user", "name email phone") // Populate user details
       .populate({
         path: "products.product",
-        select: "name price image", // Select required fields
+        select: "name price images", // Ensure images field is selected
       })
-      .populate("products.seller", "companyInfo.companyName companyInfo.companyAddress"); // Fetch seller details correctly
+      .populate({
+        path: "products.seller",
+        select: "companyInfo.companyPhone companyInfo.companyAddress", // Fetch seller phone & address
+      });
 
     if (!orders || orders.length === 0) {
       return res.status(404).json({ message: "No orders found" });
     }
 
     console.log(`✅ Fetched ${orders.length} orders`);
-    res.status(200).json({ orders }); // Return as an object with key "orders"
-  } catch (err) {
-    console.error("❌ Error fetching orders:", err.message);
-    res.status(500).json({ message: "Internal server error. Please try again later." });
+    res.status(200).json({ orders });
+  } catch (error) {
+    console.error("❌ Error fetching orders:", error.message);
+    res.status(500).json({ message: "Server error" });
   }
 };
-
