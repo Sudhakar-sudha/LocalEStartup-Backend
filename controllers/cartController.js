@@ -56,30 +56,38 @@ exports.addToCart = async (req, res) => {
 
 
 // 📌 Get Cart Items
+
 exports.getCartItems = async (req, res) => {
   try {
-    const cart = await Cart.findOne({ user: req.params.userId }).populate("items.product");
-    if (!cart) return res.status(404).json({ message: "Cart is empty!" });
+    const userId = req.params.userId; // Get userId from URL params
+    console.log("User ID:", userId);
+
+    const cart = await Cart.findOne({ user:userId }).populate("items.product");
+
+    if (!cart) {
+      return res.status(200).json({ message: "Cart is empty", items: [] });
+    }
 
     // Extracting necessary details
     const cartData = {
       _id: cart._id,
       user: cart.user.toString(),
       items: cart.items.map(item => ({
-        productId: item.product._id, // Ensure this is properly populated
-        name: item.product.name,
-        price: item.price,
-        quantity: item.quantity,
-        image: item.product.images[0], // Assuming product has an image field
+        productId: item.product?._id, // Ensure this is properly populated
+        name: item.product?.name || "Unknown",
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        image: item.product?.images?.[0] || "", // Handle missing image case
       })),
-      totalPrice: cart.totalPrice,
-      discount: cart.discount,
-    }; 
-console.log(cartData);
-    // console.log(cartData);
+      totalPrice: cart.totalPrice || 0,
+      discount: cart.discount || 0,
+    };
+
+    console.log("Cart Data:", cartData);
     res.status(200).json(cartData);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Error fetching cart:", err.message);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
