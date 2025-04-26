@@ -82,7 +82,6 @@ exports.getCartItems = async (req, res) => {
       totalPrice: cart.totalPrice || 0,
       discount: cart.discount || 0,
     };
-
     console.log("Cart Data:", cartData);
     res.status(200).json(cartData);
   } catch (err) {

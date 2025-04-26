@@ -19,6 +19,12 @@ const orderSchema = new mongoose.Schema({
       required: true 
     },
     paymentStatus: { type: String, enum: ["Pending", "Completed", "Failed", "Refunded"], default: "Pending" },
+      // ✅ Add this block to store Razorpay payment info
+  paymentInfo: {
+    razorpay_payment_id: { type: String },
+    razorpay_order_id: { type: String },
+    razorpay_signature: { type: String }
+  },
     orderStatus: { 
       type: String, 
       enum: ["Placed", "Processing", "Shipped", "Out for Delivery", "Delivered", "Cancelled", "Returned"], 
@@ -31,4 +37,3 @@ const orderSchema = new mongoose.Schema({
   });
   
   module.exports = mongoose.model("Order", orderSchema);
-  
