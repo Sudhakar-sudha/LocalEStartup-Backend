@@ -2,6 +2,7 @@ const DeliveryBoy = require("../models/deliveryBoyModel");
 const transporter = require('../utils/emailTransporter');
 const crypto = require("crypto");
 
+const Order = require("../models/orderModel");
 
 function generateOtp() {
   return (crypto.randomInt(100000, 1000000)).toString();
@@ -77,7 +78,6 @@ if (await DeliveryBoy.findOne({ aadharNumber })) {
         selfie, // Store selfie image path
         aadharPhoto,
         verificationStatus: "Pending",
-        status: "Pending",
         otp, // Store OTP
         otpExpires,
       });
@@ -242,7 +242,7 @@ exports.approveDeliveryBoy = async (req, res) => {
     res.status(500).json({ message: "Server Error", error });
   }
 };
-
+ 
 
 // Update Delivery Status (Picked Up → Going to Delivery → Delivered → Completed)
 exports.updateDeliveryStatus = async (req, res) => {
@@ -284,16 +284,16 @@ exports.getAllDeliveryBoys = async (req, res) => {
 };
 
 
-// Delete a delivery boy
-exports.deleteDeliveryBoy = async (req, res) => {
-  try {
-    const { id } = req.params;
-    await DeliveryBoy.findByIdAndDelete(id);
-    res.json({ message: "Delivery boy deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error deleting delivery boy" });
-  }
-};
+  // Delete a delivery boy
+  exports.deleteDeliveryBoy = async (req, res) => {
+    try {
+      const { id } = req.params;
+      await DeliveryBoy.findByIdAndDelete(id);
+      res.json({ message: "Delivery boy deleted successfully" });
+    } catch (error) {
+      res.status(500).json({ message: "Error deleting delivery boy" });
+    }
+  };
 
 
 
@@ -308,9 +308,9 @@ exports.loginDeliveryBoy = async (req, res) => {
     }
 
     // Ensure DOB format matches
-    const formattedDob = new Date(dob).toISOString().split("T")[0];
+    // const formattedDob = new Date(dob).toISOString().split("T")[0];
 
-    const deliveryBoy = await DeliveryBoy.findOne({ email, dob: formattedDob });
+    const deliveryBoy = await DeliveryBoy.findOne({ email, dob });
 
     if (!deliveryBoy) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
@@ -335,3 +335,52 @@ console.log(deliveryBoy.verificationStatus, deliveryBoy.adminApproval);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
+
+
+
+// // Update order status
+// exports.updateOrderStatus = async (req, res) => {
+//   const orderId = req.params.id;
+//   const { orderStatus } = req.body;
+
+//   try {
+//     const order = await Order.findById(orderId);
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     order.orderStatus = orderStatus;
+//     await order.save();
+
+//     res.json({ message: "Order status updated", order });
+//   } catch (error) {
+//     console.error("Error updating order status:", error);
+//     res.status(500).json({ message: "Server error" });
+//   }
+// };
+
+
+exports.assignDeliveryBoyAndUpdateStatus = async (req, res) => {
+  const orderId = req.params.id;
+  const { orderStatus, deliveryBoyId } = req.body;
+
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    order.orderStatus = orderStatus;
+    order.deliveryBoy = deliveryBoyId;
+
+    await order.save();
+
+    res.json({ message: "Order updated and delivery boy assigned", order });
+  } catch (error) {
+    console.error("Error assigning delivery boy:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

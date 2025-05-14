@@ -17,7 +17,6 @@ const DeliveryBoySchema = new mongoose.Schema({
   otp: { type: String, required: true }, // OTP Field
   otpExpires: { type: Date, default: null },
   verificationStatus: { type: String, enum: ["Pending", "Verified"], default: "Pending" },
-  status: { type: String, enum: ["Pending", "Approved", "Picked Up", "Going to Delivery", "Delivered", "Completed"], default: "Pending" },
   adminApproval: { type: String, enum: ["Pending", "Approved", "Rejected"], default: "Pending" }, // Admin Approval Field
 }, { timestamps: true });
 

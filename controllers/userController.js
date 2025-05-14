@@ -51,7 +51,11 @@ console.log(user._id)
                <p>This OTP is valid for 5 minutes.</p>`,
       });
 
-    res.status(200).json({ message: 'OTP sent to email' });
+    // res.status(200).json({ message: 'OTP sent to email' });
+    res.status(200).json({ 
+  message: 'OTP sent to email',
+  id: user._id 
+});
   } catch (err) {
     console.error('Error in register:', err);
     res.status(500).json({ message: err.message });

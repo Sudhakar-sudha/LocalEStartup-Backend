@@ -15,4 +15,9 @@ router.delete("/:id", deliveryBoyController.deleteDeliveryBoy);
 // Route to get all delivery boys
 router.get("/", deliveryBoyController.getAllDeliveryBoys);
 router.post("/login",deliveryBoyController.loginDeliveryBoy);
+
+// PATCH /api/orders/:id/status — Update order status (e.g., to "Picked Up")
+router.patch("/:id/status", deliveryBoyController.assignDeliveryBoyAndUpdateStatus);
+
 module.exports = router;
+ 
