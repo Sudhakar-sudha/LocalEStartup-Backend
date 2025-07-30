@@ -8,7 +8,6 @@ const connectDatabase = require('./config/connectDatabase')
 dotenv.config({path:path.join(__dirname,'config','config.env')})
 
 connectDatabase();
-
 // Serve images from the 'pictures' folder
 app.use(cors());
 app.use(express.json());
@@ -27,6 +26,12 @@ app.use("/api/cart", require('./routes/cartRoutes'));
 app.use("/api/orders", require("./routes/orderRoutes"));
 // Use Delivery Boy Routes
 app.use("/api/deliveryboys", require('./routes/deliveryBoyRoutes'));
+
+
+
+app.use("/api/freelancers", require("./routes/freelancerRoutes"));
+
+
 app.listen(process.env.PORT ,() =>{
 console.log(`Server is running   ${process.env.PORT} port  for ${process.env.NODE_ENV}`);
 });
