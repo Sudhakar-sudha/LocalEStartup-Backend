@@ -8,4 +8,7 @@ router.post("/", freelancerController.addFreelancer);
 // Get all freelancers
 router.get("/", freelancerController.getFreelancers);
 
+
+router.delete("/:id", freelancerController.deleteFreelancer);
+
 module.exports = router;
