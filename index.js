@@ -3,9 +3,9 @@ const cors = require('cors');
 const app= express();
 const dotenv =require("dotenv");
 const path=require("path");
-const connectDatabase = require('./config/connectDatabase')
+const connectDatabase = require('./config/connectDatabase');
 
-dotenv.config({path:path.join(__dirname,'config','config.env')})
+dotenv.config();
 
 connectDatabase();
 // Serve images from the 'pictures' folder
