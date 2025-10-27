@@ -16,7 +16,7 @@ const createMessage = async (req, res) => {
 
     // Send email to your email (or admin) with message info
     await transporter.sendMail({
-      to: 'sudhakarsudha8672@gmail.com',   // Replace with your email
+      to: process.env.SENDER_EMAIL,   // Replace with your email
       subject: `New Contact Message from ${name} ${email}`, // Email header
       html: `<p><strong>Name:</strong> ${name}</p>
              <p><strong>Email:</strong> ${email}</p>
