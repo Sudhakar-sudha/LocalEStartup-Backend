@@ -1,6 +1,6 @@
 const Message = require('../models/sudhakarFeedbackModel');
 const transporter = require('../utils/emailTransporter');
-
+const resend = require('../utils/resendConfig');
 // POST - Create new message
 const createMessage = async (req, res) => {
   try {
@@ -15,14 +15,26 @@ const createMessage = async (req, res) => {
     await newMessage.save();
 
     // Send email to your email (or admin) with message info
-    await transporter.sendMail({
-      to: process.env.SENDER_EMAIL,   // Replace with your email
-      subject: `New Contact Message from ${name} ${email}`, // Email header
-      html: `<p><strong>Name:</strong> ${name}</p>
-             <p><strong>Email:</strong> ${email}</p>
-             <p><strong>Message:</strong></p>
-             <p>${message}</p>`, // Email body
+    // await transporter.sendMail({
+    //   to: process.env.SENDER_EMAIL,   // Replace with your email
+    //   subject: `New Contact Message from ${name} ${email}`, // Email header
+    //   html: `<p><strong>Name:</strong> ${name}</p>
+    //          <p><strong>Email:</strong> ${email}</p>
+    //          <p><strong>Message:</strong></p>
+    //          <p>${message}</p>`, // Email body
+    // });
+      // Send email using the shared resend instance
+    await resend.emails.send({
+      from: process.env.SENDER_EMAIL,
+      to: process.env.EMAIL_USER,
+      subject: `New Contact Message from ${name}`,
+      html: `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong> ${message}</p>
+      `,
     });
+
     res.status(201).json({ success: true, msg: "Message stored successfully!" });
   } catch (error) {
     console.error("Error storing message:", error);
