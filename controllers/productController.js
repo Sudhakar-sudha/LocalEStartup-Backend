@@ -61,11 +61,23 @@ exports.addProduct = async (req, res) => {
 
     await product.save();
 
-    await transporter.sendMail({
-      to: "localestartup@gmail.com",
-      subject: "New Product Pending Approval",
-      html: `<p>A new product <strong>${name}</strong> has been uploaded and needs approval.</p>`,
+    // await transporter.sendMail({
+    //   to: "localestartup@gmail.com",
+    //   subject: "New Product Pending Approval",
+    //   html: `<p>A new product <strong>${name}</strong> has been uploaded and needs approval.</p>`,
+    // });
+
+    
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: "localestartup@gmail.com",
+        subject: "New Product Pending Approval",
+        message:`<p>A new product <strong>${name}</strong> has been uploaded and needs approval.</p>`,
+      }),
     });
+
     console.log("email send to the admin");
     res.status(201).json({ message: "Product added successfully!", product });
   } catch (error) {
@@ -202,10 +214,20 @@ exports.updateProduct = async (req, res) => {
     if (!updatedProduct) {
       return res.status(404).json({ error: "Product not found!" });
     }
-    await transporter.sendMail({
-      to: "localestartup@gmail.com",
-      subject: "Updated Product Pending Approval",
-      html: `<p>A product <strong>${updatedProduct.name}</strong> has been updated and is pending approval.</p>`,
+    // await transporter.sendMail({
+    //   to: "localestartup@gmail.com",
+    //   subject: "Updated Product Pending Approval",
+    //   html: `<p>A product <strong>${updatedProduct.name}</strong> has been updated and is pending approval.</p>`,
+    // });
+
+        await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: "localestartup@gmail.com",
+        subject: "Updated Product Pending Approval",
+        message:`<p>A product <strong>${updatedProduct.name}</strong> has been updated and is pending approval.</p>`,
+      }),
     });
 
     //     console.log("Email sent to the admin");

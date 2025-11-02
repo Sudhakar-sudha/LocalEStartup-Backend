@@ -113,11 +113,23 @@ console.log(token);
     });
 
     // Send OTP via Email
-    await transporter.sendMail({
-      to: email,
-      subject: "Your OTP for Verification",
-      html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Your OTP for Verification",
+    //   html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+    //          <p>This OTP is valid for 5 minutes.</p>`,
+    // });
+
+    
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your OTP for Verification",
+        message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
              <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
 
     res.status(200).json({ status: "Success", message: "Signup successful! Check your email for verification." });
@@ -342,13 +354,28 @@ exports.loginSeller = async (req, res) => {
       expiresAt: expirationTime,
     });
 
-    // Send OTP via Email
-    await transporter.sendMail({
-      to: email,
-      subject: "Your OTP for Verification",
-      html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your OTP for Verification",
+        message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
              <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
+
+
+    // Send OTP via Email
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Your OTP for Verification",
+    //   html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+    //          <p>This OTP is valid for 5 minutes.</p>`,
+    // });
+
+
     console.log(token);
     // res.status(200).json({ message: "OTP sent successfully!" });
     res.status(200).json({
@@ -467,11 +494,23 @@ exports.sendOtp = async (req, res) => {
     });
 
     // Send OTP via Email
-    await transporter.sendMail({
-      to: email,
-      subject: "Your OTP for Verification",
-      html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Your OTP for Verification",
+    //   html: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+    //          <p>This OTP is valid for 5 minutes.</p>`,
+    // });
+
+    
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your OTP for Verification",
+        message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
              <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
     console.log(token);
     res.json({ message: "OTP sent successfully!" });

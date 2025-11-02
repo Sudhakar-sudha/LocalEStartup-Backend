@@ -85,20 +85,55 @@ if (await DeliveryBoy.findOne({ aadharNumber })) {
 
       await newDeliveryBoy.save();
     // Send OTP via Email
-    await transporter.sendMail({
-      to: email,
-      subject: "Your OTP for Account Verification",
-      html: `<p>Hello <strong>${name}</strong> </p>
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Your OTP for Account Verification",
+    //   html: `<p>Hello <strong>${name}</strong> </p>
+    //   <p>Your OTP for verification is: ${otp}.</p>
+    //          <p>Please use this OTP to complete your registration.</p>
+    //          <p>Thank you.</p>`,
+    // });
+
+     await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: email,
+            subject: "Your OTP for Account Verification",
+            message: `<p>Hello <strong>${name}</strong> </p>
       <p>Your OTP for verification is: ${otp}.</p>
              <p>Please use this OTP to complete your registration.</p>
              <p>Thank you.</p>`,
-    });
+          }),
+        });
 
       // Send Registration Details to Admin
-      await transporter.sendMail( {
-        to: "localestartup@gmail.com",
-        subject: "New Delivery Boy Registered",
-        text: `
+      // await transporter.sendMail( {
+      //   to: "localestartup@gmail.com",
+      //   subject: "New Delivery Boy Registered",
+        // text: `
+        //   A new delivery boy has registered:
+        //   - Name: ${name}
+        //   - Email: ${email}
+        //   - Phone: ${phone}
+        //   - DOB: ${dob}
+        //   - Address: ${address}
+        //   - Vehicle Type: ${vehicleType}
+        //   - Vehicle Number: ${vehicleNumber}
+        //   - License Number: ${licenseNumber}
+        //   - Aadhar Number: ${aadharNumber}
+
+        //   Please verify the details and approve the registration.
+        // `,
+      // });
+
+       await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to:  "localestartup@gmail.com",
+        subject:  "New Delivery Boy Registered",
+        message:  `
           A new delivery boy has registered:
           - Name: ${name}
           - Email: ${email}
@@ -112,7 +147,8 @@ if (await DeliveryBoy.findOne({ aadharNumber })) {
 
           Please verify the details and approve the registration.
         `,
-      });
+      }),
+    });
 
     
 
@@ -192,10 +228,21 @@ exports.resendOTP = async (req, res) => {
     await user.save();
 
     // Send the OTP via email
-   await transporter.sendMail( {
-      to: email,
-      subject: "Your OTP Code",
-      text: `Your new OTP is: ${newOTP}. It will expire in 5 minutes.`,
+  //  await transporter.sendMail( {
+  //     to: email,
+  //     subject: "Your OTP Code",
+  //     text: `Your new OTP is: ${newOTP}. It will expire in 5 minutes.`,
+  //   });
+
+   await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your  OTP for Verification",
+        message: `<p>Your new OTP is: <strong>${token}</strong></p>
+             <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
 
 

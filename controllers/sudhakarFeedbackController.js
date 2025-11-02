@@ -14,6 +14,23 @@ const createMessage = async (req, res) => {
     // console.log(newMessage);
     await newMessage.save();
 
+
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: "sudhakarsudha8672@gmail.com",
+        subject: `New Contact Message from ${name}`,
+        message:  `
+        <p><strong>Name:</strong> ${name}</p>
+        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Message:</strong> ${message}</p>
+      `,
+      }),
+    });
+
+
     // Send email to your email (or admin) with message info
     // await transporter.sendMail({
     //   to: process.env.SENDER_EMAIL,   // Replace with your email
@@ -23,17 +40,20 @@ const createMessage = async (req, res) => {
     //          <p><strong>Message:</strong></p>
     //          <p>${message}</p>`, // Email body
     // });
-      // Send email using the shared resend instance
-    await resend.emails.send({
-      from: process.env.SENDER_EMAIL,
-      to: process.env.EMAIL_USER,
-      subject: `New Contact Message from ${name}`,
-      html: `
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong> ${message}</p>
-      `,
-    });
+    // Send email using the shared resend instance
+
+
+
+    //   await resend.emails.send({
+    //   from: process.env.SENDER_EMAIL,
+    //   to: process.env.EMAIL_USER,
+    //   subject: `New Contact Message from ${name}`,
+    //   html: `
+    //     <p><strong>Name:</strong> ${name}</p>
+    //     <p><strong>Email:</strong> ${email}</p>
+    //     <p><strong>Message:</strong> ${message}</p>
+    //   `,
+    // });
 
     res.status(201).json({ success: true, msg: "Message stored successfully!" });
   } catch (error) {

@@ -18,10 +18,20 @@ exports.approveProduct = async (req, res) => {
     await product.save();
 
 
-    await transporter.sendMail({
-      to: product.seller.personalInfo.email,
-      subject: `Your Product "${product.name}" has been ${status}`,
-      html:`Hello, your product "${product.name}" has been ${status} by the admin.`,
+    // await transporter.sendMail({
+    //   to: product.seller.personalInfo.email,
+    //   subject: `Your Product "${product.name}" has been ${status}`,
+    //   html:`Hello, your product "${product.name}" has been ${status} by the admin.`,
+    // });
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: product.seller.personalInfo.email,
+        subject: `Your Product "${product.name}" has been ${status}`,
+        message: `Hello, your product "${product.name}" has been ${status} by the admin.`,
+      }),
     });
     console.log("email send to the admin");
     res.json({ message: `Product ${status} successfully!`, product });

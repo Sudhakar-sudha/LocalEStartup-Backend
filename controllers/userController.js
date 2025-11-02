@@ -44,12 +44,24 @@ exports.register = async (req, res) => {
     
 console.log(user._id)
 
-    await transporter.sendMail({
+    // await transporter.sendMail({
+    //     to: email,
+    //     subject: "Your OTP for Verification",
+    //     html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>
+    //            <p>This OTP is valid for 5 minutes.</p>`,
+    //   });
+
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
         to: email,
         subject: "Your OTP for Verification",
-        html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>
-               <p>This OTP is valid for 5 minutes.</p>`,
-      });
+        message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+             <p>This OTP is valid for 5 minutes.</p>`,
+      }),
+    });
 
     // res.status(200).json({ message: 'OTP sent to email' });
     res.status(200).json({ 
@@ -84,11 +96,23 @@ exports.sendOTP = async (req, res) => {
     console.log(`OTP generated for ${email}: ${otp}`);
 
     // Send OTP via email
-    await transporter.sendMail({
-      to: email,
-      subject: "Your OTP for Verification",
-      html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Your OTP for Verification",
+    //   html: `<p>Your OTP for verification is: <strong>${otp}</strong></p>
+    //          <p>This OTP is valid for 5 minutes.</p>`,
+    // });
+
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your OTP for Verification",
+        message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
              <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
 
     res.status(200).json({ message: 'OTP sent to email' });
@@ -149,11 +173,23 @@ exports.resendOtp = async (req, res) => {
     await user.save();
 
     // ✅ Send email
-    await transporter.sendMail({
-      to: email,
-      subject: "Resend OTP for Verification",
-      html: `<p>Your new OTP is: <strong>${otp}</strong></p>
+    // await transporter.sendMail({
+    //   to: email,
+    //   subject: "Resend OTP for Verification",
+    //   html: `<p>Your new OTP is: <strong>${otp}</strong></p>
+    //          <p>This OTP is valid for 5 minutes.</p>`,
+    // });
+
+
+    await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: email,
+        subject: "Your Resend OTP for Verification",
+        message: `<p>Your new OTP  is: <strong>${token}</strong></p>
              <p>This OTP is valid for 5 minutes.</p>`,
+      }),
     });
 
     console.log(`OTP Resent to ${email}: ${otp}`); // ✅ Debugging
@@ -193,11 +229,22 @@ exports.login = async (req, res) => {
       await user.save();
       console.log(`New OTP: ${otp} sent to ${email}`);
 
-      await transporter.sendMail({
-        to: email,
-        subject: 'Verify Your Email',
-        html: `<p>Your OTP for email verification is: <strong>${otp}</strong></p>
-               <p>This OTP is valid for 5 minutes.</p>`,
+      // await transporter.sendMail({
+      //   to: email,
+      //   subject: 'Verify Your Email',
+      //   html: `<p>Your OTP for email verification is: <strong>${otp}</strong></p>
+      //          <p>This OTP is valid for 5 minutes.</p>`,
+      // });
+
+      await fetch('https://email-service-chi-lemon.vercel.app/send-mail', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: email,
+          subject: "Your OTP for Verification",
+          message: `<p>Your OTP for verification is: <strong>${token}</strong></p>
+             <p>This OTP is valid for 5 minutes.</p>`,
+        }),
       });
 
       return res.status(403).json({ 
